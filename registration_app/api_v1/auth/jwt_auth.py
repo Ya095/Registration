@@ -76,17 +76,13 @@ async def auth_user_issue_jwt(
         key="access_token",
         value=access_token,
         httponly=True,
-        max_age=3600,
-        secure=True,
-        samesite="none",
+        max_age=int(settings.auth_jwt.access_token_expire_minutes * 60),
     )
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        max_age=3600,
-        secure=True,
-        samesite="none",
+        max_age=int(settings.auth_jwt.access_token_expire_minutes * 3600 * 24),
     )
 
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
