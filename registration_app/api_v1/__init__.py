@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from core.config import settings
+from registration_app.core.config import settings
 from .auth.views import router as basic_auth_router
 from .auth.jwt_auth import router as jwt_auth_router
 

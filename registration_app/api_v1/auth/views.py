@@ -1,5 +1,5 @@
-from core.config import settings
-from core.schemas.user import (
+from registration_app.core.config import settings
+from registration_app.core.schemas.user import (
     CreateUser,
     SuccessOperationUser,
     UserSchema,
@@ -8,7 +8,7 @@ from core.schemas.user import (
 from registration_app.api_v1.auth_crypto.utils import validate_password
 from fastapi import APIRouter, Depends, Form, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.models.db_helper import db_helper
+from registration_app.core import db_helper
 from .crud import create_user, update_user_password, deactivate_user_account
 from .jwt_auth import get_current_active_auth_user
 

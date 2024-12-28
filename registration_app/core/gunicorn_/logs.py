@@ -1,6 +1,6 @@
 from gunicorn.glogging import Logger
 from logging import Formatter
-from core.config import settings
+from registration_app.core.config import settings
 
 
 class GunicornLogger(Logger):

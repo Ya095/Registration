@@ -1,6 +1,6 @@
-from core.schemas.user import UserSchema
+from registration_app.core.schemas.user import UserSchema
 from registration_app.api_v1.auth_crypto import utils as auth_utils
-from core.config import settings
+from registration_app.core.config import settings
 from datetime import timedelta
 
 

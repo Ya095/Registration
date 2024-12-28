@@ -1,7 +1,7 @@
 from registration_app.api_v1.auth_crypto import utils as auth_utils
-from core.schemas.user import CreateUser
+from registration_app.core.schemas.user import CreateUser
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.models.user import User
+from registration_app.core.models.user import User
 from sqlalchemy import select, insert, update, text
 from sqlalchemy.exc import IntegrityError, OperationalError
 from fastapi import HTTPException, status

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
 from api_v1 import router as router_v1
-from core.config import settings
+from registration_app.core.config import settings
 
 
 @asynccontextmanager

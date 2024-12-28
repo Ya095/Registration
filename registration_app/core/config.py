@@ -53,8 +53,8 @@ class ApiPrefix(BaseModel):
 
 
 class AuthJWT(BaseModel):
-    private_key_path: Path = BASE_DIR / "registration_app" / "certs" / "jwt-private.pem"
-    public_key_path: Path = BASE_DIR / "registration_app" / "certs" / "jwt-public.pem"
+    private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"
+    public_key_path: Path = BASE_DIR / "certs" / "jwt-public.pem"
     algorithm: str = "RS256"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 30
@@ -62,7 +62,7 @@ class AuthJWT(BaseModel):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env-db",
+        env_file="registration_app/.env-db",
         case_sensitive=False,
         env_nested_delimiter="__",
         env_prefix="APP_CONFIG__",

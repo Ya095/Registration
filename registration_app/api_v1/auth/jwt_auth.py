@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.config import settings
+from registration_app.core.config import settings
 from registration_app.api_v1.auth.helpers import (
     create_access_token,
     create_refresh_token,
@@ -11,8 +11,8 @@ from registration_app.api_v1.auth.validation import (
     get_current_auth_user_for_refresh,
     get_current_token_payload_access,
 )
-from core.schemas.user import UserSchema, SuccessOperationUser
-from core.models.db_helper import db_helper
+from registration_app.core.schemas.user import UserSchema, SuccessOperationUser
+from registration_app.core import db_helper
 from .crud import get_user_by_username
 from registration_app.api_v1.auth_crypto import utils as auth_utils
 from pydantic import BaseModel

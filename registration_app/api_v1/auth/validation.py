@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from jwt import InvalidTokenError
 from fastapi import status, Request
-from core.models.db_helper import db_helper
+from registration_app.core import db_helper
 from registration_app.api_v1.auth.crud import get_user_by_username
 from registration_app.api_v1.auth.helpers import (
     TOKEN_TYPE_FIELD,
@@ -10,7 +10,7 @@ from registration_app.api_v1.auth.helpers import (
     REFRESH_TOKEN_TYPE,
 )
 from registration_app.api_v1.auth_crypto import utils as auth_utils
-from core.schemas.user import UserSchema
+from registration_app.core.schemas.user import UserSchema
 
 
 async def get_access_jwt_from_cookie(
