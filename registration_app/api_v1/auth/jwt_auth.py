@@ -3,12 +3,15 @@ from core.config import settings
 from registration_app.api_v1.auth.helpers import (
     create_access_token,
     create_refresh_token,
+    ACCESS_TOKEN_TYPE,
+    REFRESH_TOKEN_TYPE
 )
 from registration_app.api_v1.auth.validation import (
     get_current_auth_user,
     get_current_auth_user_for_refresh,
+    get_current_token_payload_access,
 )
-from core.schemas.user import UserSchema
+from core.schemas.user import UserSchema, SuccessOperationUser
 from core.models.db_helper import db_helper
 from .crud import get_user_by_username
 from registration_app.api_v1.auth_crypto import utils as auth_utils
@@ -49,7 +52,8 @@ async def validate_auth_user(
 
     if not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="user inactive"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="user inactive",
         )
 
     return user_schem
@@ -61,10 +65,17 @@ async def get_current_active_auth_user(
     if user.is_active:
         return user
 
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="user inactive")
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="user inactive",
+    )
 
 
-@router.post("/login", response_model=TokenInfo, response_model_exclude_none=True)
+@router.post(
+    "/login",
+    response_model=TokenInfo,
+    response_model_exclude_none=True,
+)
 async def auth_user_issue_jwt(
     response: Response,
     user: UserSchema = Depends(validate_auth_user),
@@ -73,27 +84,60 @@ async def auth_user_issue_jwt(
     refresh_token = create_refresh_token(user)
 
     response.set_cookie(
-        key="access_token",
+        key=f"{ACCESS_TOKEN_TYPE}_token",
         value=access_token,
         httponly=True,
-        max_age=int(settings.auth_jwt.access_token_expire_minutes * 60),
+        max_age=settings.auth_jwt.access_token_expire_minutes * 60,
     )
     response.set_cookie(
-        key="refresh_token",
+        key=f"{REFRESH_TOKEN_TYPE}_token",
         value=refresh_token,
         httponly=True,
-        max_age=int(settings.auth_jwt.access_token_expire_minutes * 3600 * 24),
+        max_age=settings.auth_jwt.access_token_expire_minutes * 3600 * 24,
     )
 
     return TokenInfo(access_token=access_token, refresh_token=refresh_token)
 
 
-@router.post("/refresh", response_model=TokenInfo, response_model_exclude_none=True)
+@router.post(
+    "/logout",
+    response_model=SuccessOperationUser,
+    response_model_exclude_none=True,
+)
+def logout_user(
+    response: Response,
+    _=Depends(get_current_token_payload_access),
+):
+    response.delete_cookie(
+        key=f"{REFRESH_TOKEN_TYPE}_token",
+        httponly=True,
+    )
+    response.delete_cookie(
+        key=f"{ACCESS_TOKEN_TYPE}_token",
+        httponly=True,
+    )
+
+    return SuccessOperationUser(
+        msg="You have successfully logged out."
+    )
+
+
+@router.post(
+    "/refresh",
+    response_model=TokenInfo,
+    response_model_exclude_none=True,
+)
 async def auth_refresh_jwt(
+    response: Response,
     user: UserSchema = Depends(get_current_auth_user_for_refresh),
 ):
     access_token = create_access_token(user)
-
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        max_age=settings.auth_jwt.access_token_expire_minutes * 60,
+    )
     return TokenInfo(access_token=access_token)
 
 

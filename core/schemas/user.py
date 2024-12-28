@@ -12,8 +12,8 @@ class CreateUser(BaseModel):
 
 class SuccessOperationUser(BaseModel):
     msg: str
-    username: str
-    email: EmailStr
+    username: str | None = None
+    email: EmailStr | None = None
 
 
 class UserChangePassword(BaseModel):

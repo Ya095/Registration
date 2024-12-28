@@ -1,6 +1,5 @@
-from fastapi import Depends, HTTPException, Cookie
+from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-# from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
 from fastapi import status, Request
 from core.models.db_helper import db_helper
@@ -14,13 +13,10 @@ from registration_app.api_v1.auth_crypto import utils as auth_utils
 from core.schemas.user import UserSchema
 
 
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
-
 async def get_access_jwt_from_cookie(
-    # access_token: str | None = Cookie(None)
     request: Request
 ) -> str | None:
-    access_token = request.cookies.get("access_token")
+    access_token = request.cookies.get(f"{ACCESS_TOKEN_TYPE}_token")
     if not access_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -31,10 +27,9 @@ async def get_access_jwt_from_cookie(
 
 
 async def get_refresh_jwt_from_cookie(
-    # refresh_token: str | None = Cookie(None)
     request: Request
 ) -> str | None:
-    refresh_token = request.cookies.get("refresh_token")
+    refresh_token = request.cookies.get(f"{REFRESH_TOKEN_TYPE}_token")
     if not refresh_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -45,16 +40,8 @@ async def get_refresh_jwt_from_cookie(
 
 
 async def get_current_token_payload_access(
-    # token: str = Depends(oauth2_scheme)
     token: str = Depends(get_access_jwt_from_cookie)
-) -> UserSchema:
-
-    # if not token:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED,
-    #         detail="Authentication credentials were not provided",
-    #     )
-
+) -> dict:
     try:
         payload = auth_utils.decode_jwt(token)
     except InvalidTokenError as ex:
