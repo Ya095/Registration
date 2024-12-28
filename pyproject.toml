@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "registration_train"
+version = "0.1.0"
+description = ""
+authors = ["Egor_Yakovlev1 <egor.yakovlev.95@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.6"
+uvicorn = {extras = ["standart"], version = "^0.34.0"}
+pydantic = {extras = ["email"], version = "^2.10.3"}
+pydantic-settings = "^2.7.0"
+poetry = "^1.8.2"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.36"}
+alembic = "^1.14.0"
+bcrypt = "^4.2.1"
+python-multipart = "^0.0.20"
+pyjwt = {extras = ["crypto"], version = "^2.10.1"}
+asyncpg = "^0.30.0"
+gunicorn = "^23.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
