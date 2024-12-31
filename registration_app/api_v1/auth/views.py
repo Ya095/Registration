@@ -31,13 +31,13 @@ async def basic_register(
 
 @router.patch("/change_password", response_model=SuccessOperationUser)
 async def change_password(
-    password_data: UserChangePassword,
+    passwords_data: UserChangePassword,
     user: UserSchema = Depends(get_current_active_auth_user),
     session: AsyncSession = Depends(db_helper.session_getter),
 ):
 
     if not validate_password(
-        password_data.current_password,
+        passwords_data.current_password,
         user.hashed_password,
     ):
         raise HTTPException(
@@ -47,8 +47,8 @@ async def change_password(
 
     await update_user_password(
         session,
-        user.username,
-        password_data.new_password,
+        user.id,
+        passwords_data.new_password,
     )
 
     return SuccessOperationUser(

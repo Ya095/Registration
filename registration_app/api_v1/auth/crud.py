@@ -2,7 +2,7 @@ from registration_app.api_v1.auth_crypto import utils as auth_utils
 from registration_app.core.schemas.user import CreateUser
 from sqlalchemy.ext.asyncio import AsyncSession
 from registration_app.core.models.user import User
-from sqlalchemy import select, insert, update, text
+from sqlalchemy import select, insert, update
 from sqlalchemy.exc import IntegrityError, OperationalError
 from fastapi import HTTPException, status
 
@@ -100,18 +100,17 @@ async def get_user_by_username(
 
 async def update_user_password(
     session: AsyncSession,
-    username: str,
-    new_password: str
+    user_id: int,
+    new_password: str,
 ) -> None:
     password_hashed = auth_utils.hash_password(new_password).decode()
 
     try:
         stmt = (
             update(User)
-            .where(User.username == username)
+            .where(User.id == user_id)
             .values(hashed_password=password_hashed)
         )
-
         await session.execute(stmt)
         await session.commit()
 
