@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from jwt import InvalidTokenError
 from fastapi import status, Request
 from registration_app.core import db_helper
-from registration_app.api_v1.auth.crud import get_user_by_username
+from registration_app.api_v1.auth.crud import get_user_by_id
 from registration_app.api_v1.auth.helpers import (
     TOKEN_TYPE_FIELD,
     ACCESS_TOKEN_TYPE,
@@ -20,7 +20,7 @@ async def get_access_jwt_from_cookie(
     if not access_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication credentials were not provided",
+            detail="Access token was not provided.",
         )
 
     return access_token
@@ -33,7 +33,7 @@ async def get_refresh_jwt_from_cookie(
     if not refresh_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication credentials were not provided",
+            detail="Refresh token was not provided",
         )
 
     return refresh_token
@@ -82,9 +82,9 @@ async def get_user_by_token_sub(
     payload: dict,
     session: AsyncSession
 ) -> UserSchema:
-    username: str | None = payload.get("sub")
+    user_id: str = payload.get("sub")
 
-    user = await get_user_by_username(session, username)
+    user = await get_user_by_id(session, user_id)
     if user:
         return UserSchema.model_validate(user)
 
@@ -111,4 +111,3 @@ async def get_current_auth_user_for_refresh(
     validate_token_type(payload, REFRESH_TOKEN_TYPE)
 
     return await get_user_by_token_sub(payload, session)
-

@@ -9,7 +9,7 @@ from fastapi import HTTPException, status
 
 exception_creating_user = HTTPException(
     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    detail="An error occurred while creating the user",
+    detail="An error occurred while creating the user.",
 )
 
 exception_unexpected = HTTPException(
@@ -40,7 +40,7 @@ async def create_user(
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Username already exists",
+            detail="Username already exists.",
         )
 
     except OperationalError:
@@ -51,6 +51,28 @@ async def create_user(
     except Exception as e:
         # logger.exception(f"Unexpected error creating user: {e}")
         await session.rollback()
+        raise exception_unexpected
+
+
+async def get_user_by_id(
+    session: AsyncSession,
+    user_id: str,
+) -> User | None:
+
+    try:
+        stmt = (
+            select("*")
+            .where(User.id == int(user_id))
+        )
+        res = await session.execute(stmt)
+        return res.one_or_none()
+
+    except OperationalError:
+        # logger.exception(f"Unexpected error getting user: {e}")
+        raise exception_unexpected
+    except Exception as e:
+        # logger.exception(f"Unexpected error getting user: {e}")
+        print(e)
         raise exception_unexpected
 
 
@@ -90,7 +112,6 @@ async def update_user_password(
             .values(hashed_password=password_hashed)
         )
 
-        await session.execute(text("SET TRANSACTION ISOLATION LEVEL READ COMMITTED"))
         await session.execute(stmt)
         await session.commit()
 
