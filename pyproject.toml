@@ -21,6 +21,7 @@ python-multipart = "^0.0.20"
 pyjwt = {extras = ["crypto"], version = "^2.10.1"}
 asyncpg = "^0.30.0"
 gunicorn = "^23.0.0"
+loguru = "^0.7.3"
 
 
 [tool.poetry.group.dev.dependencies]

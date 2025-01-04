@@ -4,46 +4,142 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     AsyncSession
 )
-from typing import AsyncGenerator
 from registration_app.core.config import settings
+from contextlib import asynccontextmanager
+from typing import Callable, Optional, AsyncGenerator
+from fastapi import Depends
+from loguru import logger
+from sqlalchemy import text
+from functools import wraps
 
 
-class DatabaseHelper:
-    def __init__(
-            self,
-            url: str,
-            echo: bool = False,
-            echo_pool: bool = False,
-            pool_size: int = 10,
-            max_overflow: int = 10
-    ) -> None:
+class DatabaseSessionManager:
+    """
+    Класс для управления асинхронными сессиями базы данных, включая поддержку транзакций и зависимости FastAPI.
+    """
+
+    def __init__(self):#, session_maker: async_sessionmaker[AsyncSession]):
+        # self.session_maker = session_maker
         self.engine: AsyncEngine = create_async_engine(
-            url=url,
-            echo=echo,
-            echo_pool=echo_pool,
-            pool_size=pool_size,
-            max_overflow=max_overflow,
+            url=str(settings.db.url),
+            echo=settings.db.echo,
+            echo_pool=settings.db.echo_pool,
+            pool_size=settings.db.echo_pool,
+            max_overflow=settings.db.max_overflow,
         )
-        self.session_factory: async_sessionmaker[AsyncSession] = async_sessionmaker(
+
+        self.session_maker: async_sessionmaker[AsyncSession] = async_sessionmaker(
             bind=self.engine,
+            class_=AsyncSession,
             autoflush=False,
             autocommit=False,
-            expire_on_commit=False
+            expire_on_commit=False,
         )
 
-    # close engine (connection)
-    async def dispose(self) -> None:
-        await self.engine.dispose()
+    @asynccontextmanager
+    async def create_session(self) -> AsyncGenerator[AsyncSession, None]:
+        """
+        Создаёт и предоставляет новую сессию базы данных.
+        Гарантирует закрытие сессии по завершении работы.
+        """
+        async with self.session_maker() as session:
+            try:
+                yield session
+            except Exception as e:
+                logger.error(f"Ошибка при создании сессии базы данных: {e}")
+                raise
+            finally:
+                await session.close()
 
-    async def session_getter(self) -> AsyncGenerator[AsyncSession, None]:
-        async with self.session_factory() as session:
+    @asynccontextmanager
+    async def transaction(self, session: AsyncSession) -> AsyncGenerator[None, None]:
+        """
+        Управление транзакцией: коммит при успехе, откат при ошибке.
+        """
+        try:
+            yield
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+            logger.exception(f"Ошибка транзакции: {e}")
+            raise
+
+    async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
+        """
+        Зависимость для FastAPI, возвращающая сессию без управления транзакцией.
+        """
+        async with self.create_session() as session:
             yield session
 
+    async def get_transaction_session(self) -> AsyncGenerator[AsyncSession, None]:
+        """
+        Зависимость для FastAPI, возвращающая сессию с управлением транзакцией.
+        """
+        async with self.create_session() as session:
+            async with self.transaction(session):
+                yield session
 
-db_helper = DatabaseHelper(
-    url=str(settings.db.url),
-    echo=settings.db.echo,
-    echo_pool=settings.db.echo_pool,
-    pool_size=settings.db.pool_size,
-    max_overflow=settings.db.max_overflow
-)
+    def connection(self, isolation_level: Optional[str] = None, commit: bool = True):
+        """
+        Декоратор для управления сессией с возможностью настройки уровня изоляции и коммита.
+
+        Параметры:
+        - `isolation_level`: уровень изоляции для транзакции (например, "SERIALIZABLE").
+        - `commit`: если `True`, выполняется коммит после вызова метода.
+        """
+
+        def decorator(method):
+            @wraps(method)
+            async def wrapper(*args, **kwargs):
+                async with self.session_maker() as session:
+                    try:
+                        if isolation_level:
+                            await session.execute(text(f"SET TRANSACTION ISOLATION LEVEL {isolation_level}"))
+
+                        result = await method(*args, session=session, **kwargs)
+
+                        if commit:
+                            await session.commit()
+
+                        return result
+                    except Exception as e:
+                        await session.rollback()
+                        logger.error(f"Ошибка при выполнении транзакции: {e}")
+                        raise
+                    finally:
+                        await session.close()
+
+            return wrapper
+
+        return decorator
+
+    @property
+    def session_dependency(self) -> Callable:
+        """Возвращает зависимость для FastAPI, обеспечивающую доступ к сессии без транзакции."""
+        return Depends(self.get_session)
+
+    @property
+    def transaction_session_dependency(self) -> Callable:
+        """Возвращает зависимость для FastAPI с поддержкой транзакций."""
+        return Depends(self.get_transaction_session)
+
+
+# Инициализация менеджера сессий базы данных
+session_manager = DatabaseSessionManager()#session_factory)
+
+# Зависимости FastAPI для использования сессий
+SessionDep = session_manager.session_dependency
+TransactionSessionDep = session_manager.transaction_session_dependency
+
+# Пример использования декоратора
+# @session_manager.connection(isolation_level="SERIALIZABLE", commit=True)
+# async def example_method(*args, session: AsyncSession, **kwargs):
+#     # Логика метода
+#     pass
+
+
+# Пример использования зависимости
+# @router.post("/register/")
+# async def register_user(user_data: SUserRegister, session: AsyncSession = TransactionSessionDep):
+#     # Логика эндпоинта
+#     pass

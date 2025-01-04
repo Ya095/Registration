@@ -1,7 +1,19 @@
 __all__ = (
-    "User",
-    "db_helper",
+    "UserModel",
+    "RoleModel",
+    "BaseDAO",
+    "TransactionSessionDep",
+    "SessionDep",
+    "session_manager",
 )
 
-from .models.db_helper import db_helper
-from .models.user import User
+from .models.user import (
+    User as UserModel,
+    Role as RoleModel
+)
+from .models.db_helper import (
+    TransactionSessionDep,
+    SessionDep,
+    session_manager,
+)
+from .dao import BaseDAO
