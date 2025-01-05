@@ -7,12 +7,13 @@ from registration_app.api_v1.auth.schemas import (
     UserId,
     UserPassword,
 )
-from fastapi import APIRouter, Form, Depends
+from fastapi import APIRouter, Form, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from .utils_token_info import (
     get_current_active_auth_user,
     get_current_token_payload_access,
 )
+from .helpers import REFRESH_TOKEN_TYPE, ACCESS_TOKEN_TYPE
 from registration_app.core import TransactionSessionDep, UserModel
 from registration_app.api_v1.dao import UsersDAO
 from registration_app import exceptions
@@ -72,12 +73,24 @@ async def change_password(
 
 @router.delete("/deactivate_user_account", response_model=SuccessOperationUser)
 async def deactivate_account(
+    response: Response,
     payload: dict = Depends(get_current_token_payload_access),
     session: AsyncSession = TransactionSessionDep,
 ):
-    await UsersDAO.make_inactive(
+    await UsersDAO.make_inactive_by_id(
         session=session,
-        filters=UserId(id=payload["sub"])
+        data_id=int(payload.get("sub")),
+    )
+
+    response.delete_cookie(
+        key=f"{ACCESS_TOKEN_TYPE}_token",
+        httponly=True,
+        # secure=True,
+    )
+    response.delete_cookie(
+        key=f"{REFRESH_TOKEN_TYPE}_token",
+        httponly=True,
+        # secure=True,
     )
 
     return SuccessOperationUser(

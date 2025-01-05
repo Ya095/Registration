@@ -37,7 +37,6 @@ async def auth_user(
     user_data: UserAuth = Form(),
     session: AsyncSession = SessionDep,
 ):
-    print(user_data)
     user = await authenticate_user(session=session, user_data=user_data)
     if user is None:
         raise IncorrectUsernameOrPasswordException
@@ -49,12 +48,14 @@ async def auth_user(
         key=f"{ACCESS_TOKEN_TYPE}_token",
         value=access_token,
         httponly=True,
+        # secure=True,
         max_age=settings.auth_jwt.access_token_expire_minutes * 60,
     )
     response.set_cookie(
         key=f"{REFRESH_TOKEN_TYPE}_token",
         value=refresh_token,
         httponly=True,
+        # secure=True,
         max_age=settings.auth_jwt.access_token_expire_minutes * 3600 * 24,
     )
 
@@ -72,10 +73,12 @@ def logout_user(
     response.delete_cookie(
         key=f"{REFRESH_TOKEN_TYPE}_token",
         httponly=True,
+        # secure=True,
     )
     response.delete_cookie(
         key=f"{ACCESS_TOKEN_TYPE}_token",
         httponly=True,
+        # secure=True,
     )
 
     return SuccessOperationUser(msg="You have successfully logged out.")
@@ -96,6 +99,7 @@ async def auth_refresh_jwt(
         key="access_token",
         value=access_token,
         httponly=True,
+        # secure=True,
         max_age=settings.auth_jwt.access_token_expire_minutes * 60,
     )
     return TokenInfo(access_token=access_token)

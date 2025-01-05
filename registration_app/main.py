@@ -1,20 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-# from contextlib import asynccontextmanager
 import uvicorn
 from api_v1 import router as router_v1
 from registration_app.core.config import settings
 
 
-# @asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Load the ML model
-    yield
-    # Clean up the ML models and release the resources
-
-
 app = FastAPI(
-    # lifespan=lifespan,
     title="Users API",
     version="1.0.0",
     description="Working with users.",
@@ -24,19 +15,23 @@ app = FastAPI(
 @app.get("/")
 def home_page():
     return {
-        "message": "Добро пожаловать! Пусть эта заготовка станет удобным инструментом для вашей работы и "
-                   "приносит вам пользу!"
+        "message": "Добро пожаловать!"
     }
 
 
 app.include_router(router_v1, prefix=settings.api.prefix)
 
+origins = [
+    "http://localhost:5170" # адрес фронта
+]
+
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5170"],  # адрес фронта
+    middleware_class=CORSMiddleware,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=['Content-Type', 'Set-Cookie', 'Access-Control-Allow-Headers', 'Access-Control-Allow-Origin',
+                   'Authorization'],
 )
 
 

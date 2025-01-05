@@ -267,3 +267,31 @@ class BaseDAO(Generic[T]):
             await session.rollback()
             logger.error(f"Ошибка при деактивации записей: {e}")
             raise e
+
+    @classmethod
+    async def make_inactive_by_id(cls, session: AsyncSession, data_id: int):
+        """Сделать неактивной запись (is_active=False) по id"""
+
+        logger.info(
+            f"Деактивация записи модели {cls.model.__name__} с id {data_id}"
+        )
+        if not data_id:
+            logger.error("Не передан id для деактивации.")
+            raise ValueError("Не передан id для деактивации.")
+
+        query = (
+            sqlalchemy_update(cls.model)
+            .where(getattr(cls.model, "id") == data_id)
+            .values(is_active=False)
+            .execution_options(synchronize_session="fetch")
+        )
+        try:
+            await session.execute(query)
+            # await session.flush()
+            await session.commit()
+            logger.info(f"Запись деактивирована (id {data_id})")
+            # return result.rowcount
+        except SQLAlchemyError as e:
+            await session.rollback()
+            logger.error(f"Ошибка при деактивации записи {cls.model.__name__} id {data_id}")
+            raise e
