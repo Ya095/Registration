@@ -37,6 +37,7 @@ async def auth_user(
     user_data: UserAuth = Form(),
     session: AsyncSession = SessionDep,
 ):
+    print(user_data)
     user = await authenticate_user(session=session, user_data=user_data)
     if user is None:
         raise IncorrectUsernameOrPasswordException

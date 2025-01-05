@@ -6,11 +6,7 @@ from registration_app.api_v1.auth.helpers import (
     ACCESS_TOKEN_TYPE,
     REFRESH_TOKEN_TYPE,
 )
-from registration_app.exceptions import (
-    InactiveUser,
-    InvalidTokenType,
-    UserNotFound,
-)
+from registration_app import exceptions
 from registration_app.api_v1.auth_crypto import utils as auth_utils
 from registration_app.core import SessionDep
 from registration_app.api_v1.dao import UsersDAO
@@ -23,10 +19,7 @@ async def get_access_jwt_from_cookie(
 ) -> str | None:
     access_token = request.cookies.get(f"{ACCESS_TOKEN_TYPE}_token")
     if not access_token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Access token was not provided.",
-        )
+        raise exceptions.AccessTokenNotFound
 
     return access_token
 
@@ -36,10 +29,7 @@ async def get_refresh_jwt_from_cookie(
 ) -> str | None:
     refresh_token = request.cookies.get(f"{REFRESH_TOKEN_TYPE}_token")
     if not refresh_token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Refresh token was not provided",
-        )
+        raise exceptions.RefreshTokenNotFound
 
     return refresh_token
 
@@ -77,7 +67,7 @@ def validate_token_type(payload: dict, token_type: str) -> bool:
     if current_token_type == token_type:
         return True
 
-    raise InvalidTokenType
+    raise exceptions.InvalidTokenType
 
 
 async def get_user_by_token_sub(
@@ -86,14 +76,14 @@ async def get_user_by_token_sub(
 ) -> UserModel:
     user_id = int(payload.get("sub"))
 
-    user = await UsersDAO.find_one_or_none(
+    user = await UsersDAO.find_one_or_none_by_id(
+        data_id=user_id,
         session=session,
-        filters=UserId(id=user_id)
     )
     if user:
         return user
 
-    raise UserNotFound
+    raise exceptions.UserNotFound
 
 
 async def get_current_auth_user(
@@ -121,4 +111,4 @@ async def get_current_active_auth_user(
     if user.is_active:
         return user
 
-    raise InactiveUser
+    raise exceptions.InactiveUser

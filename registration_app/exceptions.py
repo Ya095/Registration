@@ -3,22 +3,34 @@ from fastapi import status, HTTPException
 
 UserAlreadyExistsException = HTTPException(
     status_code=status.HTTP_409_CONFLICT,
-    detail="Пользователь уже существует",
+    detail="Пользователь уже существует.",
 )
 
 IncorrectUsernameOrPasswordException = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Неверный логин или пароль",
+    detail="Неверный логин или пароль.",
 )
+
+
+IncorrectCurrentPasswordException = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Текущий пароль не верен.",
+)
+
 
 TokenExpiredException = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Токен истек",
 )
 
-TokenNotFound = HTTPException(
+AccessTokenNotFound = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Токен истек",
+    detail="Access token was not provided.",
+)
+
+RefreshTokenNotFound = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Refresh token was not provided.",
 )
 
 NoJwtException = HTTPException(

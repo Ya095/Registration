@@ -4,6 +4,7 @@ from pydantic import (
     Field,
     ConfigDict,
     model_validator,
+    computed_field,
 )
 from typing import Self
 from decimal import Decimal
@@ -20,19 +21,14 @@ class UserName(BaseModel):
 
 
 class UserId(BaseModel):
-    ConfigDict(from_attributes=True)
     id: int
 
 
-class UserAuth(UserName):
+class UserPassword(BaseModel):
     password: str = Field(
         min_length=8,
         description="Пароль, от 8 знаков",
     )
-
-
-class CreateUser(UserAuth):
-    email: EmailStr = Field(...)
 
     @model_validator(mode="after")
     def check_password(self) -> Self:
@@ -40,6 +36,15 @@ class CreateUser(UserAuth):
 
         self.password = hash_password(self.password).decode()
         return self
+
+
+class UserAuth(UserPassword, UserName):
+    def check_password(self) -> Self:
+        return self
+
+
+class CreateUser(UserPassword, UserName):
+    email: EmailStr = Field(...)
 
 
 class SuccessOperationUser(BaseModel):
@@ -50,7 +55,17 @@ class SuccessOperationUser(BaseModel):
 
 class UserChangePassword(BaseModel):
     current_password: str
-    new_password: str = Field(min_length=8)
+    new_password: str = Field(
+        min_length=8,
+        description="Пароль, от 8 знаков",
+    )
+
+    @model_validator(mode="after")
+    def check_password(self) -> Self:
+        """хешируем пароль до сохранения в БД"""
+
+        self.new_password = hash_password(self.new_password).decode()
+        return self
 
 
 class RoleModel(BaseModel):
@@ -62,5 +77,9 @@ class RoleModel(BaseModel):
 class UserSchema(UserName, UserId):
     email: EmailStr
     is_active: bool
-    money: Decimal
-    role: RoleModel
+    money: Decimal = Field(decimal_places=2)
+    role: RoleModel = Field(exclude=True)
+
+    @computed_field
+    def role_name(self) -> str:
+        return self.role.name

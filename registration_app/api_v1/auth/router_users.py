@@ -3,12 +3,20 @@ from registration_app.api_v1.auth.schemas import (
     CreateUser,
     SuccessOperationUser,
     UserName,
+    UserChangePassword,
+    UserId,
+    UserPassword,
 )
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Form, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from registration_app.core import TransactionSessionDep
+from .utils_token_info import (
+    get_current_active_auth_user,
+    get_current_token_payload_access,
+)
+from registration_app.core import TransactionSessionDep, UserModel
 from registration_app.api_v1.dao import UsersDAO
-from registration_app.exceptions import UserAlreadyExistsException
+from registration_app import exceptions
+from registration_app.api_v1.auth_crypto.utils import validate_password
 
 router = APIRouter(prefix=settings.api.v1.auth, tags=["User DB"])
 
@@ -19,11 +27,10 @@ async def basic_register(
     user_data: CreateUser = Form(),
 ):
     user = await UsersDAO.find_one_or_none(
-        session=session,
-        filters=UserName(username=user_data.username)
+        session=session, filters=UserName(username=user_data.username)
     )
     if user:
-        raise UserAlreadyExistsException
+        raise exceptions.UserAlreadyExistsException
 
     await UsersDAO.add(
         session=session,
@@ -37,46 +44,44 @@ async def basic_register(
     )
 
 
+@router.patch("/change_password", response_model=SuccessOperationUser)
+async def change_password(
+    passwords_data: UserChangePassword,
+    user: UserModel = Depends(get_current_active_auth_user),
+    session: AsyncSession = TransactionSessionDep,
+):
+
+    if not validate_password(
+        passwords_data.current_password,
+        user.password,
+    ):
+        raise exceptions.IncorrectCurrentPasswordException
+
+    await UsersDAO.update(
+        session=session,
+        filters=UserId(id=user.id),
+        values=UserPassword(password=passwords_data.current_password),
+    )
+
+    return SuccessOperationUser(
+        msg="Password updated successfully!",
+        username=user.username,
+        email=user.email,
+    )
 
 
-# @router.patch("/change_password", response_model=SuccessOperationUser)
-# async def change_password(
-#     passwords_data: UserChangePassword,
-#     user: UserSchema = Depends(get_current_active_auth_user),
-#     session: AsyncSession = Depends(db_helper.session_getter),
-# ):
-#
-#     if not validate_password(
-#         passwords_data.current_password,
-#         user.hashed_password,
-#     ):
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="Current password is incorrect.",
-#         )
-#
-#     await update_user_password(
-#         session,
-#         user.id,
-#         passwords_data.new_password,
-#     )
-#
-#     return SuccessOperationUser(
-#         msg="Password updated successfully!",
-#         username=user.username,
-#         email=user.email,
-#     )
-#
-#
-# @router.delete("/deactivate_user_account", response_model=SuccessOperationUser)
-# async def delete_account(
-#     user: UserSchema = Depends(get_current_active_auth_user),
-#     session: AsyncSession = Depends(db_helper.session_getter),
-# ):
-#     await deactivate_user_account(session, user.id)
-#
-#     return SuccessOperationUser(
-#         msg=f"User deleted successfully!",
-#         username=user.username,
-#         email=user.email,
-#     )
+@router.delete("/deactivate_user_account", response_model=SuccessOperationUser)
+async def deactivate_account(
+    payload: dict = Depends(get_current_token_payload_access),
+    session: AsyncSession = TransactionSessionDep,
+):
+    await UsersDAO.make_inactive(
+        session=session,
+        filters=UserId(id=payload["sub"])
+    )
+
+    return SuccessOperationUser(
+        msg=f"User deactivated successfully!",
+        username=payload.get("username"),
+        email=payload.get("email"),
+    )
