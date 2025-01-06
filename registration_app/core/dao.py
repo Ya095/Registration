@@ -10,7 +10,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
 from .models.base import Base
-
+from registration_app.exceptions import UserNotFound
 
 # Объявляем типовой параметр T с ограничением, что это наследник Base
 T = TypeVar("T", bound=Base)
@@ -20,7 +20,7 @@ class BaseDAO(Generic[T]):
     model: type[T]
 
     @classmethod
-    async def find_one_or_none_by_id(cls, data_id: int, session: AsyncSession):
+    async def find_one_or_none_by_id(cls, data_id: int, session: AsyncSession) -> type[T]:
         """Найти запись по ID"""
 
         logger.info(f"Поиск {cls.model.__name__} с ID: {data_id}")
@@ -281,7 +281,7 @@ class BaseDAO(Generic[T]):
 
         query = (
             sqlalchemy_update(cls.model)
-            .where(getattr(cls.model, "id") == data_id)
+            .where(getattr(cls.model, "id") == data_id)  # type: ignore
             .values(is_active=False)
             .execution_options(synchronize_session="fetch")
         )
@@ -295,3 +295,40 @@ class BaseDAO(Generic[T]):
             await session.rollback()
             logger.error(f"Ошибка при деактивации записи {cls.model.__name__} id {data_id}")
             raise e
+
+    @classmethod
+    async def select_for_update_by_id(cls, session: AsyncSession, data_id: int, filters: BaseModel):
+        """Выбор и обновление строки по id"""
+
+        logger.info(
+            f"Выбор и обновление строки из модели {cls.model.__name__} с id {data_id}"
+        )
+
+        filter_dict = filters.model_dump(exclude_unset=True)
+        if not data_id or filter_dict:
+            logger.error("Не переданы id или фильтры для обновления.")
+            raise ValueError("Не переданы id или фильтры для обновления.")
+        
+        try:
+            select_query = (
+                select(cls.model)
+                .filter_by(**filter_dict)
+                .with_for_update()
+            )
+            select_result = await session.execute(select_query)
+            user = select_result.scalar_one()
+            if not user:
+                raise UserNotFound
+
+            # update_query = (
+            #     sqlalchemy_update(cls.model)
+            #     .where(getattr(cls.model, "id") == data_id)  # type: ignore
+            #     .values(role=)
+            # )
+
+        except SQLAlchemyError as e:
+            await session.rollback()
+            logger.error(f"Ошибка при select for update {cls.model.__name__} id {data_id}")
+            raise e
+
+

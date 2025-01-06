@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter, Response, Form, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .schemas import UserAuth, SuccessOperationUser, UserSchema
+from .schemas import UserAuth, SuccessOperation, UserSchema
 from .validation import authenticate_user
 from .helpers import (
     create_access_token,
@@ -64,7 +64,7 @@ async def auth_user(
 
 @router.post(
     "/logout",
-    response_model=SuccessOperationUser,
+    response_model=SuccessOperation,
     response_model_exclude_none=True,
 )
 def logout_user(
@@ -81,7 +81,7 @@ def logout_user(
         # secure=True,
     )
 
-    return SuccessOperationUser(msg="You have successfully logged out.")
+    return SuccessOperation(msg="You have successfully logged out.")
 
 
 @router.post(

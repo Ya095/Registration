@@ -44,9 +44,9 @@ NoUserIdException = HTTPException(
 )
 
 UserNotFound = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="User not found n",
-    )
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="User not found.",
+)
 
 ForbiddenException = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
@@ -59,11 +59,11 @@ UnexpectedException = HTTPException(
 )
 
 InactiveUser = HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="User inactive!",
-    )
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="User inactive!",
+)
 
 InvalidTokenType = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid token type!",
-    )
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Invalid token type!",
+)

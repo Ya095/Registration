@@ -9,6 +9,7 @@ from pydantic import (
 from typing import Self
 from decimal import Decimal
 from registration_app.api_v1.auth_crypto.utils import hash_password
+from registration_app.core import PortalRole
 
 
 class UserName(BaseModel):
@@ -20,7 +21,7 @@ class UserName(BaseModel):
     )
 
 
-class UserId(BaseModel):
+class DataId(BaseModel):
     id: int
 
 
@@ -47,7 +48,7 @@ class CreateUser(UserPassword, UserName):
     email: EmailStr = Field(...)
 
 
-class SuccessOperationUser(BaseModel):
+class SuccessOperation(BaseModel):
     msg: str
     username: str | None = None
     email: EmailStr | None = None
@@ -68,17 +69,23 @@ class UserChangePassword(BaseModel):
         return self
 
 
-class RoleModel(BaseModel):
+class RoleName(BaseModel):
+    name: PortalRole
+
+
+class RoleSchema(DataId, RoleName):
     model_config = ConfigDict(from_attributes=True)
-    id: int = Field(description="Идентификатор роли")
-    name: str = Field(description="Название роли")
 
 
-class UserSchema(UserName, UserId):
+class ChangeRoleToUser(BaseModel):
+    role_id: int
+
+
+class UserSchema(UserName, DataId):
     email: EmailStr
     is_active: bool
     money: Decimal = Field(decimal_places=2)
-    role: RoleModel = Field(exclude=True)
+    role: RoleSchema = Field(exclude=True)
 
     @computed_field
     def role_name(self) -> str:

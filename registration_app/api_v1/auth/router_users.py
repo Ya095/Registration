@@ -1,10 +1,10 @@
 from registration_app.core.config import settings
 from registration_app.api_v1.auth.schemas import (
     CreateUser,
-    SuccessOperationUser,
+    SuccessOperation,
     UserName,
     UserChangePassword,
-    UserId,
+    DataId,
     UserPassword,
 )
 from fastapi import APIRouter, Form, Depends, Response
@@ -19,10 +19,10 @@ from registration_app.api_v1.dao import UsersDAO
 from registration_app import exceptions
 from registration_app.api_v1.auth_crypto.utils import validate_password
 
-router = APIRouter(prefix=settings.api.v1.auth, tags=["User DB"])
+router = APIRouter(prefix=settings.api.v1.auth, tags=["Users DB"])
 
 
-@router.post("/register", response_model=SuccessOperationUser)
+@router.post("/register", response_model=SuccessOperation)
 async def basic_register(
     session: AsyncSession = TransactionSessionDep,
     user_data: CreateUser = Form(),
@@ -38,14 +38,14 @@ async def basic_register(
         values=user_data,
     )
 
-    return SuccessOperationUser(
+    return SuccessOperation(
         msg="User created successfully!",
         username=user_data.username,
         email=user_data.email,
     )
 
 
-@router.patch("/change_password", response_model=SuccessOperationUser)
+@router.patch("/change_password", response_model=SuccessOperation)
 async def change_password(
     passwords_data: UserChangePassword,
     user: UserModel = Depends(get_current_active_auth_user),
@@ -60,18 +60,18 @@ async def change_password(
 
     await UsersDAO.update(
         session=session,
-        filters=UserId(id=user.id),
+        filters=DataId(id=user.id),
         values=UserPassword(password=passwords_data.current_password),
     )
 
-    return SuccessOperationUser(
+    return SuccessOperation(
         msg="Password updated successfully!",
         username=user.username,
         email=user.email,
     )
 
 
-@router.delete("/deactivate_user_account", response_model=SuccessOperationUser)
+@router.delete("/deactivate_user_account", response_model=SuccessOperation)
 async def deactivate_account(
     response: Response,
     payload: dict = Depends(get_current_token_payload_access),
@@ -93,7 +93,7 @@ async def deactivate_account(
         # secure=True,
     )
 
-    return SuccessOperationUser(
+    return SuccessOperation(
         msg=f"User deactivated successfully!",
         username=payload.get("username"),
         email=payload.get("email"),

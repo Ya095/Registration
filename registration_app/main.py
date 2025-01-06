@@ -21,17 +21,16 @@ def home_page():
 
 app.include_router(router_v1, prefix=settings.api.prefix)
 
-origins = [
-    "http://localhost:5170" # адрес фронта
+origins: list[str] = [
+    "http://localhost:5170",  # адрес фронта
 ]
 
 app.add_middleware(
-    middleware_class=CORSMiddleware,
+    CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=['Content-Type', 'Set-Cookie', 'Access-Control-Allow-Headers', 'Access-Control-Allow-Origin',
-                   'Authorization'],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
 )
 
 

@@ -10,7 +10,7 @@ from registration_app import exceptions
 from registration_app.api_v1.auth_crypto import utils as auth_utils
 from registration_app.core import SessionDep
 from registration_app.api_v1.dao import UsersDAO
-from .schemas import UserSchema, UserId
+from .schemas import UserSchema, DataId
 from registration_app.core import UserModel
 
 
