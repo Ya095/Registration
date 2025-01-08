@@ -9,7 +9,7 @@ from registration_app.core import (
 )
 from registration_app.core.config import settings
 from registration_app.api_v1.dao import RoleDAO, UsersDAO
-from registration_app.exceptions import ForbiddenException, InactiveUser
+from registration_app.exceptions import ForbiddenException
 from .schemas import (
     RoleSchema,
     SuccessOperation,
