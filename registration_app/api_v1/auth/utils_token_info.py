@@ -8,10 +8,9 @@ from registration_app.api_v1.auth.helpers import (
 )
 from registration_app import exceptions
 from registration_app.api_v1.auth_crypto import utils as auth_utils
-from registration_app.core import SessionDep
+from registration_app.core import SessionDep, UserModel
 from registration_app.api_v1.dao import UsersDAO
 from .schemas import UserSchema, DataId
-from registration_app.core import UserModel
 
 
 async def get_access_jwt_from_cookie(
@@ -112,3 +111,10 @@ async def get_current_active_auth_user(
         return user
 
     raise exceptions.InactiveUser
+
+
+def superuser_required(
+    user: UserModel = Depends(get_current_active_auth_user),
+):
+    if not user.is_superadmin:
+        raise exceptions.ForbiddenException

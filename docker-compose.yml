@@ -6,3 +6,13 @@ services:
       - registration_app/.env-db
     ports:
       - "5432:5432"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["registration_app/docker_run.sh"]
+    ports:
+      - "8000:8000"
+    depends_on:
+      - pg

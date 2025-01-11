@@ -3,13 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from registration_app.core import (
     TransactionSessionDep,
     RoleModel,
-    UserModel,
     SessionDep,
     PortalRole,
 )
 from registration_app.core.config import settings
 from registration_app.api_v1.dao import RoleDAO, UsersDAO
-from registration_app.exceptions import ForbiddenException
 from .schemas import (
     RoleSchema,
     SuccessOperation,
@@ -17,7 +15,7 @@ from .schemas import (
     UserName,
     RoleName,
 )
-from .utils_token_info import get_current_active_auth_user
+from .utils_token_info import superuser_required
 
 
 router = APIRouter(prefix=settings.api.v1.role, tags=["Admins"])
@@ -26,6 +24,7 @@ router = APIRouter(prefix=settings.api.v1.role, tags=["Admins"])
 @router.get("/get_all_roles", response_model=list[RoleSchema])
 async def get_all_roles(
     session: AsyncSession = SessionDep,
+    _ = Depends(superuser_required),
 ):
     roles: list[RoleModel] = await RoleDAO.find_all(
         session,
@@ -43,11 +42,8 @@ async def add_role_to_user_by_username(
     username: str,
     role_name: PortalRole,
     session: AsyncSession = TransactionSessionDep,
-    user: UserModel = Depends(get_current_active_auth_user),
+    _ = Depends(superuser_required),
 ):
-    if not user.is_superadmin:
-        raise ForbiddenException
-
     role = await RoleDAO.find_one_or_none(
         session,
         RoleName(name=role_name),

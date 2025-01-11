@@ -105,6 +105,24 @@ class BaseDAO(Generic[T]):
         return new_instance
 
     @classmethod
+    async def add_many(cls, session: AsyncSession, instances: List[BaseModel]):
+        """Добавить несколько записей"""
+
+        values_list = [item.model_dump(exclude_unset=True) for item in instances]
+        logger.info(f"Добавление нескольких записей {cls.model.__name__}. Количество: {len(values_list)}")
+        new_instances = [cls.model(**values) for values in values_list]
+        session.add_all(new_instances)
+        try:
+            # await session.flush()
+            await session.commit()
+            logger.info(f"Успешно добавлено {len(new_instances)} записей.")
+        except SQLAlchemyError as e:
+            await session.rollback()
+            logger.error(f"Ошибка при добавлении нескольких записей {cls.model.__name__}: {e}")
+            raise e
+        return new_instances
+
+    @classmethod
     async def update(cls, session: AsyncSession, filters: BaseModel, values: BaseModel):
         """Обновить записи по фильтрам"""
 

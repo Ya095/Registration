@@ -28,7 +28,8 @@ async def basic_register(
     user_data: CreateUser = Form(),
 ):
     user = await UsersDAO.find_one_or_none(
-        session=session, filters=UserName(username=user_data.username)
+        session=session,
+        filters=UserName(username=user_data.username),
     )
     if user:
         raise exceptions.UserAlreadyExistsException

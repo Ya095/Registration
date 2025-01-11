@@ -30,14 +30,14 @@ class User(Base, IdIntPkMixin):
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), default=1)
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP,
-        server_default=text("TIMEZONE('utc', now())",)
+        server_default=text("TIMEZONE('utc', now())"),
     )
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP,
         server_default=text("TIMEZONE('utc', now())"),
         onupdate=text("TIMEZONE('utc', now())"),
     )
-    role = relationship('Role', backref='users', lazy="selectin")
+    role = relationship("Role", backref="users", lazy="selectin")
 
     __table_args__ = (UniqueConstraint("username", "email"),)
 

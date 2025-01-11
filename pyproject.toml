@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Egor_Yakovlev1 <egor.yakovlev.95@gmail.com>"]
 license = "MIT"
-readme = "README.md"
+#readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
