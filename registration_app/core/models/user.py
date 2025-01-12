@@ -27,7 +27,7 @@ class User(Base, IdIntPkMixin):
     email: Mapped[str]
     money: Mapped[Decimal] = mapped_column(Numeric, default=0)
     is_active: Mapped[bool] = mapped_column(default=True)
-    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), default=1)
+    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP,
         server_default=text("TIMEZONE('utc', now())"),
@@ -52,6 +52,7 @@ class User(Base, IdIntPkMixin):
     def __repr__(self):
         return str(self)
 
+    # ToDo RoleCache user
     @property
     def is_admin(self) -> bool:
         return self.role.name == PortalRole.ADMIN

@@ -14,7 +14,7 @@ from .utils_token_info import (
     get_current_token_payload_access,
 )
 from .helpers import REFRESH_TOKEN_TYPE, ACCESS_TOKEN_TYPE
-from registration_app.core import TransactionSessionDep, UserModel
+from registration_app.core import TransactionSessionDep, UserModel, RoleCache
 from registration_app.api_v1.dao import UsersDAO
 from registration_app import exceptions
 from registration_app.api_v1.auth_crypto.utils import validate_password
@@ -22,6 +22,7 @@ from registration_app.api_v1.auth_crypto.utils import validate_password
 router = APIRouter(prefix=settings.api.v1.auth, tags=["Users DB"])
 
 
+# ToDo RoleCache user
 @router.post("/register", response_model=SuccessOperation)
 async def basic_register(
     session: AsyncSession = TransactionSessionDep,

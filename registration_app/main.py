@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+from loguru import logger
 from api_v1 import router as router_v1
 from registration_app.core.config import settings
+from registration_app.core import session_manager
+from registration_app.core.utils.role_cache import RoleCache
 
 
 app = FastAPI(
@@ -14,9 +17,7 @@ app = FastAPI(
 
 @app.get("/")
 def home_page():
-    return {
-        "message": "Добро пожаловать!"
-    }
+    return {"message": "Добро пожаловать!"}
 
 
 app.include_router(router_v1, prefix=settings.api.prefix)
@@ -32,6 +33,19 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def start_up():
+    try:
+        async with session_manager.create_session() as session:
+            await RoleCache.initialize_roles(session)
+            await RoleCache.load_roles(session)
+            await session.commit()
+    except Exception as e:
+        await session.rollback()
+        logger.exception(f"Start up transaction error: %s", str(e))
+        exit(1)
 
 
 if __name__ == "__main__":

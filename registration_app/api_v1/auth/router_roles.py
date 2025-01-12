@@ -18,7 +18,7 @@ from .schemas import (
 from .utils_token_info import superuser_required
 
 
-router = APIRouter(prefix=settings.api.v1.role, tags=["Admins"])
+router = APIRouter(prefix=settings.api.v1.role, tags=["Roles"])
 
 
 @router.get("/get_all_roles", response_model=list[RoleSchema])
@@ -33,6 +33,7 @@ async def get_all_roles(
     return roles
 
 
+# ToDo RoleCache user
 @router.patch(
     "/add_role_to_user",
     response_model=SuccessOperation,

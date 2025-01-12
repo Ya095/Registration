@@ -18,8 +18,7 @@ class DatabaseSessionManager:
     Класс для управления асинхронными сессиями базы данных, включая поддержку транзакций и зависимости FastAPI.
     """
 
-    def __init__(self):#, session_maker: async_sessionmaker[AsyncSession]):
-        # self.session_maker = session_maker
+    def __init__(self):
         self.engine: AsyncEngine = create_async_engine(
             url=str(settings.db.url),
             echo=settings.db.echo,
@@ -125,7 +124,7 @@ class DatabaseSessionManager:
 
 
 # Инициализация менеджера сессий базы данных
-session_manager = DatabaseSessionManager()#session_factory)
+session_manager = DatabaseSessionManager()
 
 # Зависимости FastAPI для использования сессий
 SessionDep = session_manager.session_dependency

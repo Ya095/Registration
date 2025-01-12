@@ -46,6 +46,7 @@ class UserAuth(UserPassword, UserName):
 
 class CreateUser(UserPassword, UserName):
     email: EmailStr = Field(...)
+    role_id: int = Field(exclude=True) # ToDo RoleCache user
 
 
 class SuccessOperation(BaseModel):

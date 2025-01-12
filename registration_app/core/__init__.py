@@ -6,6 +6,7 @@ __all__ = (
     "TransactionSessionDep",
     "SessionDep",
     "session_manager",
+    "RoleCache",
 )
 
 from .models.user import (
@@ -19,3 +20,4 @@ from .models.db_helper import (
     session_manager,
 )
 from .dao import BaseDAO
+from .utils.role_cache import RoleCache
