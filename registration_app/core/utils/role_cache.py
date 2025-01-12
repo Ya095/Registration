@@ -1,8 +1,17 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
-from registration_app.core import PortalRole, RoleModel
+from typing import TYPE_CHECKING
+from registration_app.core import PortalRole
 from registration_app.api_v1.dao import RoleDAO
-from registration_app.api_v1.auth.schemas import RoleName
+from pydantic import BaseModel
+
+
+if TYPE_CHECKING:
+    from registration_app.core import RoleModel
+
+
+class NameRole(BaseModel):
+    name: str
 
 
 class RoleCache:
@@ -12,13 +21,13 @@ class RoleCache:
     async def initialize_roles(cls, session: AsyncSession) -> None:
         """Инициализирует роли в базе данных, добавляя отсутствующие."""
 
-        roles: list[RoleModel] = await RoleDAO.find_all(session, None)
+        roles: list["RoleModel"] = await RoleDAO.find_all(session, None)
 
         existing_roles = {role.name for role in roles}
         required_roles = {role.value for role in PortalRole}  # type: ignore
 
         missing_roles = required_roles - existing_roles
-        missing_roles_schemas: list[RoleName] = [RoleName(name=role_name) for role_name in missing_roles]
+        missing_roles_schemas: list[NameRole] = [NameRole(name=role_name) for role_name in missing_roles]
 
         if missing_roles:
             await RoleDAO.add_many(session, missing_roles_schemas)
@@ -30,7 +39,7 @@ class RoleCache:
     async def load_roles(cls, session: AsyncSession) -> None:
         """Загружает роли из базы данных в кэш."""
 
-        roles: list[RoleModel] = await RoleDAO.find_all(session, None)
+        roles: list["RoleModel"] = await RoleDAO.find_all(session, None)
         cls._roles_cache = {role.name: role.id for role in roles}
         logger.info("Roles added to cache.")
 

@@ -5,18 +5,19 @@ from registration_app.core import (
     RoleModel,
     SessionDep,
     PortalRole,
+    UserModel,
 )
 from registration_app.core.config import settings
 from registration_app.api_v1.dao import RoleDAO, UsersDAO
+from registration_app.core.utils.role_cache import RoleCache
 from .schemas import (
     RoleSchema,
     SuccessOperation,
     ChangeRoleToUser,
     UserName,
-    RoleName,
 )
 from .utils_token_info import superuser_required
-
+from registration_app.exceptions import ForbiddenException
 
 router = APIRouter(prefix=settings.api.v1.role, tags=["Roles"])
 
@@ -33,28 +34,32 @@ async def get_all_roles(
     return roles
 
 
-# ToDo RoleCache user
 @router.patch(
-    "/add_role_to_user",
+    "/change_user_role",
     response_model=SuccessOperation,
     response_model_exclude_none=True,
 )
-async def add_role_to_user_by_username(
+async def change_user_role_by_username(
     username: str,
     role_name: PortalRole,
     session: AsyncSession = TransactionSessionDep,
     _ = Depends(superuser_required),
 ):
-    role = await RoleDAO.find_one_or_none(
-        session,
-        RoleName(name=role_name),
+    role_id = RoleCache.get_role_id(role_name)
+
+    user_for_update: UserModel = await UsersDAO.find_one_or_none(
+        session=session,
+        filters=UserName(username=username),
     )
+
+    if user_for_update.is_superadmin:
+        raise ForbiddenException
 
     await UsersDAO.update(
         session,
         UserName(username=username),
-        ChangeRoleToUser(role_id=role.id),
+        ChangeRoleToUser(role_id=role_id),
     )
     return SuccessOperation(
-        msg=f"Role assigned successfully to user {username!r}.",
+        msg=f"Role {role_name!r} assigned successfully to user {username!r}.",
     )

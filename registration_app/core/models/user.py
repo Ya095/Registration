@@ -52,14 +52,15 @@ class User(Base, IdIntPkMixin):
     def __repr__(self):
         return str(self)
 
-    # ToDo RoleCache user
     @property
     def is_admin(self) -> bool:
         return self.role.name == PortalRole.ADMIN
+        # return self.role_id == RoleCache.get_role_id(PortalRole.ADMIN)
 
     @property
     def is_superadmin(self) -> bool:
         return self.role.name == PortalRole.SUPERADMIN
+        # return self.role_id == RoleCache.get_role_id(PortalRole.SUPERADMIN)
 
 
 class Role(Base, IdIntPkMixin):

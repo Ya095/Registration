@@ -10,6 +10,7 @@ from typing import Self
 from decimal import Decimal
 from registration_app.api_v1.auth_crypto.utils import hash_password
 from registration_app.core import PortalRole
+from registration_app.core.utils.role_cache import RoleCache
 
 
 class UserName(BaseModel):
@@ -46,7 +47,10 @@ class UserAuth(UserPassword, UserName):
 
 class CreateUser(UserPassword, UserName):
     email: EmailStr = Field(...)
-    role_id: int = Field(exclude=True) # ToDo RoleCache user
+
+    @computed_field
+    def role_id(self) -> int:
+        return RoleCache.get_role_id(PortalRole.USER)
 
 
 class SuccessOperation(BaseModel):
