@@ -9,8 +9,8 @@ from pydantic import (
 from typing import Self
 from decimal import Decimal
 from registration_app.api_v1.auth_crypto.utils import hash_password
-from registration_app.core import PortalRole
 from registration_app.core.utils.role_cache import RoleCache
+from registration_app.core.utils.enums import PortalRole
 
 
 class UserName(BaseModel):
@@ -90,8 +90,4 @@ class UserSchema(UserName, DataId):
     email: EmailStr
     is_active: bool
     money: Decimal = Field(decimal_places=2)
-    role: RoleSchema = Field(exclude=True)
-
-    @computed_field
-    def role_name(self) -> str:
-        return self.role.name
+    role_id: int

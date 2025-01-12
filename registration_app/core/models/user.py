@@ -1,7 +1,6 @@
 from datetime import datetime
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 from decimal import Decimal
-from enum import Enum
 from .base import Base
 from .mixins.id_int_pk import IdIntPkMixin
 from sqlalchemy import (
@@ -11,12 +10,7 @@ from sqlalchemy import (
     TIMESTAMP,
     ForeignKey,
 )
-
-
-class PortalRole(str, Enum):
-    USER = "USER"
-    ADMIN = "ADMIN"
-    SUPERADMIN = "SUPERADMIN"
+from registration_app.core.utils.enums import PortalRole
 
 
 class User(Base, IdIntPkMixin):
@@ -37,7 +31,6 @@ class User(Base, IdIntPkMixin):
         server_default=text("TIMEZONE('utc', now())"),
         onupdate=text("TIMEZONE('utc', now())"),
     )
-    role = relationship("Role", backref="users", lazy="selectin")
 
     __table_args__ = (UniqueConstraint("username", "email"),)
 
@@ -54,13 +47,13 @@ class User(Base, IdIntPkMixin):
 
     @property
     def is_admin(self) -> bool:
-        return self.role.name == PortalRole.ADMIN
-        # return self.role_id == RoleCache.get_role_id(PortalRole.ADMIN)
+        from registration_app.core.utils.role_cache import RoleCache
+        return self.role_id == RoleCache.get_role_id(PortalRole.ADMIN)
 
     @property
     def is_superadmin(self) -> bool:
-        return self.role.name == PortalRole.SUPERADMIN
-        # return self.role_id == RoleCache.get_role_id(PortalRole.SUPERADMIN)
+        from registration_app.core.utils.role_cache import RoleCache
+        return self.role_id == RoleCache.get_role_id(PortalRole.SUPERADMIN)
 
 
 class Role(Base, IdIntPkMixin):

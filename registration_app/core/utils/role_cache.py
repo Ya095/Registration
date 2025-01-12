@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
 from typing import TYPE_CHECKING
-from registration_app.core import PortalRole
+from registration_app.core.utils.enums import PortalRole
 from registration_app.api_v1.dao import RoleDAO
 from pydantic import BaseModel
 

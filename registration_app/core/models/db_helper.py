@@ -122,6 +122,9 @@ class DatabaseSessionManager:
         """Возвращает зависимость для FastAPI с поддержкой транзакций."""
         return Depends(self.get_transaction_session)
 
+    async def dispose(self) -> None:
+        await self.engine.dispose()
+
 
 # Инициализация менеджера сессий базы данных
 session_manager = DatabaseSessionManager()

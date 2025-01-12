@@ -48,6 +48,11 @@ async def start_up():
         exit(1)
 
 
+@app.on_event("shutdown")
+async def shut_down():
+    await session_manager.dispose()
+
+
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",

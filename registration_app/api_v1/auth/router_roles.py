@@ -4,7 +4,6 @@ from registration_app.core import (
     TransactionSessionDep,
     RoleModel,
     SessionDep,
-    PortalRole,
     UserModel,
 )
 from registration_app.core.config import settings
@@ -17,7 +16,9 @@ from .schemas import (
     UserName,
 )
 from .utils_token_info import superuser_required
+from registration_app.core.utils.enums import PortalRole
 from registration_app.exceptions import ForbiddenException
+
 
 router = APIRouter(prefix=settings.api.v1.role, tags=["Roles"])
 

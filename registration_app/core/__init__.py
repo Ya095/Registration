@@ -1,7 +1,6 @@
 __all__ = (
     "UserModel",
     "RoleModel",
-    "PortalRole",
     "BaseDAO",
     "TransactionSessionDep",
     "SessionDep",
@@ -11,7 +10,6 @@ __all__ = (
 from .models.user import (
     User as UserModel,
     Role as RoleModel,
-    PortalRole,
 )
 from .models.db_helper import (
     TransactionSessionDep,
