@@ -3,7 +3,7 @@ services:
   pg:
     image: postgres
     env_file:
-      - registration_app/.env-db
+      - registration_app/.env
     ports:
       - "5432:5432"
 

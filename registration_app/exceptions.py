@@ -3,24 +3,24 @@ from fastapi import status, HTTPException
 
 UserAlreadyExistsException = HTTPException(
     status_code=status.HTTP_409_CONFLICT,
-    detail="Пользователь уже существует.",
+    detail="The user already exists.",
 )
 
 IncorrectUsernameOrPasswordException = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Неверный логин или пароль.",
+    detail="Invalid username or password.",
 )
 
 
 IncorrectCurrentPasswordException = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Текущий пароль не верен.",
+    detail="The current password is incorrect.",
 )
 
 
 TokenExpiredException = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Токен истек",
+    detail="The token has expired.",
 )
 
 AccessTokenNotFound = HTTPException(
@@ -35,12 +35,12 @@ RefreshTokenNotFound = HTTPException(
 
 NoJwtException = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Токен не валидный!",
+    detail="The token is not valid.",
 )
 
 NoUserIdException = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Не найден ID пользователя",
+    detail="The user's ID was not found.",
 )
 
 UserNotFound = HTTPException(
@@ -50,7 +50,7 @@ UserNotFound = HTTPException(
 
 ForbiddenException = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
-    detail="Недостаточно прав!",
+    detail="Not enough rights.",
 )
 
 UnexpectedException = HTTPException(
@@ -60,10 +60,10 @@ UnexpectedException = HTTPException(
 
 InactiveUser = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
-    detail="User inactive!",
+    detail="User inactive.",
 )
 
 InvalidTokenType = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Invalid token type!",
+    detail="Invalid token type.",
 )
