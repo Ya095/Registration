@@ -96,7 +96,6 @@ class BaseDAO(Generic[T]):
         try:
             session.add(new_instance)
             await session.flush()
-            # await session.commit()
             logger.info(f"Запись {cls.model.__name__} успешно добавлена.")
         except SQLAlchemyError as e:
             await session.rollback()
@@ -114,7 +113,6 @@ class BaseDAO(Generic[T]):
         session.add_all(new_instances)
         try:
             await session.flush()
-            # await session.commit()
             logger.info(f"Успешно добавлено {len(new_instances)} записей.")
         except SQLAlchemyError as e:
             await session.rollback()
@@ -141,7 +139,6 @@ class BaseDAO(Generic[T]):
         try:
             result = await session.execute(query)
             await session.flush()
-            # await session.commit()
             logger.info(f"Обновлено записей: {result.rowcount}")
             # return result.rowcount
         except SQLAlchemyError as e:
@@ -166,7 +163,6 @@ class BaseDAO(Generic[T]):
         try:
             result = await session.execute(query)
             await session.flush()
-            # await session.commit()
             logger.info(f"Удалено {result.rowcount} записей.")
             # return result.rowcount
         except SQLAlchemyError as e:
@@ -241,7 +237,6 @@ class BaseDAO(Generic[T]):
                 for key, value in values_dict.items():
                     setattr(existing, key, value)
                 await session.flush()
-                # await session.commit()
                 logger.info(f"Обновлена существующая запись {cls.model.__name__}")
                 return existing
             else:
@@ -249,7 +244,6 @@ class BaseDAO(Generic[T]):
                 new_instance = cls.model(**values_dict)
                 session.add(new_instance)
                 await session.flush()
-                # await session.commit()
                 logger.info(f"Создана новая запись {cls.model.__name__}")
                 return new_instance
         except SQLAlchemyError as e:
@@ -278,7 +272,6 @@ class BaseDAO(Generic[T]):
         try:
             result = await session.execute(query)
             await session.flush()
-            # await session.commit()
             logger.info(f"Деактивировано записей: {result.rowcount}")
             # return result.rowcount
         except SQLAlchemyError as e:
@@ -306,7 +299,6 @@ class BaseDAO(Generic[T]):
         try:
             await session.execute(query)
             await session.flush()
-            # await session.commit()
             logger.info(f"Запись деактивирована (id {data_id})")
             # return result.rowcount
         except SQLAlchemyError as e:
