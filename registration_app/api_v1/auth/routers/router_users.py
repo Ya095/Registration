@@ -9,11 +9,11 @@ from registration_app.api_v1.auth.schemas import (
 )
 from fastapi import APIRouter, Form, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
-from .utils_token_info import (
+from registration_app.api_v1.auth.utils_token_info import (
     get_current_active_auth_user,
     get_current_token_payload_access,
 )
-from .helpers import REFRESH_TOKEN_TYPE, ACCESS_TOKEN_TYPE
+from registration_app.api_v1.auth.helpers import REFRESH_TOKEN_TYPE, ACCESS_TOKEN_TYPE
 from registration_app.core import TransactionSessionDep, UserModel
 from registration_app.api_v1.dao import UsersDAO
 from registration_app import exceptions

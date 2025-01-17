@@ -28,11 +28,11 @@ ENV POETRY_VERSION=1.8.2 \
 
 RUN pip install poetry==${POETRY_VERSION}
 
-WORKDIR /app
+WORKDIR ${PYTHONPATH}
 
 COPY poetry.lock pyproject.toml ./
 RUN poetry check
-COPY . /app
+COPY . ${PYTHONPATH}
 RUN poetry install --without dev
 
 RUN chmod +x registration_app/docker_run.sh

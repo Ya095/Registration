@@ -9,13 +9,13 @@ from registration_app.core import (
 from registration_app.core.config import settings
 from registration_app.api_v1.dao import RoleDAO, UsersDAO
 from registration_app.core.utils.role_cache import RoleCache
-from .schemas import (
+from registration_app.api_v1.auth.schemas import (
     RoleSchema,
     SuccessOperation,
     ChangeRoleToUser,
     UserName,
 )
-from .utils_token_info import superuser_required
+from registration_app.api_v1.auth.utils_token_info import superuser_required
 from registration_app.core.utils.enums import PortalRole
 from registration_app.exceptions import ForbiddenException
 

@@ -20,7 +20,7 @@ def home_page():
     return {"message": "Добро пожаловать!"}
 
 
-app.include_router(router_v1, prefix=settings.api.prefix)
+app.include_router(router_v1)
 
 origins: list[str] = [
     "http://localhost:5170",  # адрес фронта

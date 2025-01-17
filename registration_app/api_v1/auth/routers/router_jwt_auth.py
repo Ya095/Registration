@@ -2,15 +2,15 @@ from pydantic import BaseModel
 from fastapi import APIRouter, Response, Form, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .schemas import UserAuth, SuccessOperation, UserSchema
-from .validation import authenticate_user
-from .helpers import (
+from registration_app.api_v1.auth.schemas import UserAuth, SuccessOperation, UserSchema
+from registration_app.api_v1.auth.validation import authenticate_user
+from registration_app.api_v1.auth.helpers import (
     create_access_token,
     create_refresh_token,
     ACCESS_TOKEN_TYPE,
     REFRESH_TOKEN_TYPE,
 )
-from .utils_token_info import (
+from registration_app.api_v1.auth.utils_token_info import (
     get_current_auth_user_for_refresh,
     get_current_active_auth_user,
 )
