@@ -5,6 +5,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     python3-dev \
+    postgresql-client \
     libpq-dev \
     libffi-dev \
     libssl-dev \

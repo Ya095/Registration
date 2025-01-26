@@ -1,20 +1,35 @@
 from gunicorn.glogging import Logger
-from logging import Formatter
 from registration_app.core.config import settings
+from loguru import logger
+import sys
+import logging
 
 
 class GunicornLogger(Logger):
-    def setup(self, cfg) -> None:
-        super().setup(cfg)
+    def setup(self, cfg):
+        handler = logging.NullHandler()
+        self.error_logger = logging.getLogger("gunicorn.error")
+        self.error_logger.addHandler(handler)
+        self.access_logger = logging.getLogger("gunicorn.access")
+        self.access_logger.addHandler(handler)
+        self.error_logger.setLevel(settings.log.log_level.upper())
+        self.access_logger.setLevel(settings.log.log_level.upper())
 
-        self._set_handler(
-            log=self.access_log,
-            output=cfg.accesslog,
-            fmt=Formatter(fmt=settings.log.log_format),
-        )
 
-        self._set_handler(
-            log=self.error_log,
-            output=cfg.errorlog,
-            fmt=Formatter(fmt=settings.log.log_format),
+class InterceptHandler(logging.Handler):
+    def emit(self, record):
+        # get corresponding Loguru level if it exists
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        # find caller from where originated the logged message
+        frame, depth = sys._getframe(6), 6
+        while frame and frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level, record.getMessage()
         )

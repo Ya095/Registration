@@ -5,7 +5,8 @@ from pathlib import Path
 
 
 BASE_DIR = Path(__file__).parent.parent
-LOG_DEFAULT_FORMAT = "[%(asctime)s.%(msecs)03d] %(module)10s:%(lineno)-3d %(levelname)-7s - %(message)s"
+LOG_DEFAULT_FORMAT = "{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} | {message}"
+PATH_TO_SAVE_LOGS = "registration_app/logs/{time:YYYY-MM-DD HH:mm:ss}.logs"
 
 
 class RunConfig(BaseModel):
@@ -17,13 +18,14 @@ class RunConfig(BaseModel):
 
 class LoggingConfig(BaseModel):
     log_level: Literal[
-        "debug",
-        "info",
-        "warning",
-        "error",
-        "critical",
-    ] = "info"
+        "DEBUG",
+        "INFO",
+        "WARNING",
+        "ERROR",
+        "CRITICAL",
+    ] = "INFO"
     log_format: str = LOG_DEFAULT_FORMAT
+    path_to_save: str = PATH_TO_SAVE_LOGS
 
 
 class DatabaseConfig(BaseModel):
