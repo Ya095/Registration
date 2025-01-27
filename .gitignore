@@ -125,7 +125,7 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
-[Ll]ogs/
+#[Ll]ogs/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -650,3 +650,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+registration_app/logs/log_files/*.log
+
+!/registration_app/logs/__init__.py
+!/registration_app/logs/setup_logs.py

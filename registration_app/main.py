@@ -6,6 +6,7 @@ from api_v1 import router as router_v1
 from registration_app.core.config import settings
 from registration_app.core import session_manager
 from registration_app.core.utils.role_cache import RoleCache
+from registration_app.logs.setup_logs import setup_logs
 
 
 app = FastAPI(
@@ -54,6 +55,8 @@ async def shut_down():
 
 
 if __name__ == "__main__":
+    setup_logs()
+
     uvicorn.run(
         "main:app",
         reload=True,

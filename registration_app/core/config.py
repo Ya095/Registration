@@ -6,7 +6,11 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent
 LOG_DEFAULT_FORMAT = "{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} | {message}"
-PATH_TO_SAVE_LOGS = "registration_app/logs/{time:YYYY-MM-DD HH:mm:ss}.logs"
+INPLACE_LOG_FORMAT = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | " \
+                      "<level>{level: <8}</level> | " \
+                      "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - " \
+                      "<level>{message}</level>"
+PATH_TO_SAVE_LOGS = "registration_app/logs/log_files/{time:YYYY-MM-DD HH:mm:ss}.log"
 
 
 class RunConfig(BaseModel):
@@ -25,6 +29,7 @@ class LoggingConfig(BaseModel):
         "CRITICAL",
     ] = "INFO"
     log_format: str = LOG_DEFAULT_FORMAT
+    inplace_log_format: str = INPLACE_LOG_FORMAT
     path_to_save: str = PATH_TO_SAVE_LOGS
 
 
