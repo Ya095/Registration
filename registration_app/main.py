@@ -7,6 +7,7 @@ from registration_app.core.config import settings
 from registration_app.core import session_manager
 from registration_app.core.utils.role_cache import RoleCache
 from registration_app.logs.setup_logs import setup_logs
+from starlette_exporter import handle_metrics, PrometheusMiddleware
 
 
 app = FastAPI(
@@ -35,6 +36,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/metrics", handle_metrics)
 
 @app.on_event("startup")
 async def start_up():
