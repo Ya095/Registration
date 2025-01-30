@@ -1,7 +1,6 @@
 from gunicorn.glogging import Logger
 from registration_app.core.config import settings
 from loguru import logger
-import sys
 import logging
 
 
@@ -17,16 +16,16 @@ class GunicornLogger(Logger):
 
 
 class InterceptHandler(logging.Handler):
-    def emit(self, record):
-        # get corresponding Loguru level if it exists
+    def emit(self, record: logging.LogRecord):
+        # Get corresponding Loguru level if it exists
         try:
             level = logger.level(record.levelname).name
         except ValueError:
             level = record.levelno
 
-        # find caller from where originated the logged message
-        frame, depth = sys._getframe(6), 6
-        while frame and frame.f_code.co_filename == logging.__file__:
+        # Find caller from where originated the logged message
+        frame, depth = logging.currentframe(), 2
+        while frame.f_code.co_filename == logging.__file__:
             frame = frame.f_back
             depth += 1
 

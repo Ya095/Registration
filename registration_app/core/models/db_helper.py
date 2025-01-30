@@ -13,22 +13,24 @@ from sqlalchemy import text
 from functools import wraps
 
 
+db_engine: AsyncEngine = create_async_engine(
+    url=str(settings.db.url),
+    echo=settings.db.echo,
+    echo_pool=settings.db.echo_pool,
+    pool_size=settings.db.echo_pool,
+    max_overflow=settings.db.max_overflow,
+)
+
+
 class DatabaseSessionManager:
     """
     Класс для управления асинхронными сессиями базы данных, включая поддержку транзакций и зависимости FastAPI.
     """
 
-    def __init__(self):
-        self.engine: AsyncEngine = create_async_engine(
-            url=str(settings.db.url),
-            echo=settings.db.echo,
-            echo_pool=settings.db.echo_pool,
-            pool_size=settings.db.echo_pool,
-            max_overflow=settings.db.max_overflow,
-        )
-
+    def __init__(self, engine: AsyncEngine):
+        self.engine = engine
         self.session_maker: async_sessionmaker[AsyncSession] = async_sessionmaker(
-            bind=self.engine,
+            bind=engine,
             class_=AsyncSession,
             autoflush=False,
             autocommit=False,
@@ -127,7 +129,7 @@ class DatabaseSessionManager:
 
 
 # Инициализация менеджера сессий базы данных
-session_manager = DatabaseSessionManager()
+session_manager = DatabaseSessionManager(engine=db_engine)
 
 # Зависимости FastAPI для использования сессий
 SessionDep = session_manager.session_dependency

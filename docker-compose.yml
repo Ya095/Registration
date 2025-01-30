@@ -5,7 +5,7 @@ services:
     container_name: pg
     env_file:
       - registration_app/.env
-    restart: always
+#    restart: always
     ports:
       - "5432:5432"
     volumes:
@@ -25,7 +25,7 @@ services:
   prometheus:
     image: prom/prometheus:v2.43.0
     container_name: prometheus
-    restart: unless-stopped
+#    restart: unless-stopped
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
@@ -41,7 +41,7 @@ services:
     container_name: grafana
     ports:
       - "3000:3000"
-    restart: always
+#    restart: always
     user: "0"
     volumes:
       - grafana-data:/var/lib/grafana

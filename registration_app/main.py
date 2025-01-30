@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 import uvicorn
 from loguru import logger
 from api_v1 import router as router_v1
@@ -10,10 +11,30 @@ from registration_app.logs.setup_logs import setup_logs
 from starlette_exporter import handle_metrics, PrometheusMiddleware
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan-менеджер для управления ресурсами приложения."""
+
+    try:
+        async with session_manager.create_session() as session:
+            await RoleCache.initialize_roles(session)
+            await RoleCache.load_roles(session)
+            await session.commit()
+    except Exception as e:
+        await session.rollback()
+        logger.exception(f"Start up transaction error: %s", str(e))
+        exit(1)
+
+    yield
+
+    await session_manager.dispose()
+
+
 app = FastAPI(
-    title="Users API",
+    title="User registration API",
     version="1.0.0",
-    description="Working with users.",
+    description="Working with users and their roles.",
+    lifespan=lifespan,
 )
 
 
@@ -38,23 +59,6 @@ app.add_middleware(
 
 app.add_middleware(PrometheusMiddleware)
 app.add_route("/metrics", handle_metrics)
-
-@app.on_event("startup")
-async def start_up():
-    try:
-        async with session_manager.create_session() as session:
-            await RoleCache.initialize_roles(session)
-            await RoleCache.load_roles(session)
-            await session.commit()
-    except Exception as e:
-        await session.rollback()
-        logger.exception(f"Start up transaction error: %s", str(e))
-        exit(1)
-
-
-@app.on_event("shutdown")
-async def shut_down():
-    await session_manager.dispose()
 
 
 if __name__ == "__main__":
