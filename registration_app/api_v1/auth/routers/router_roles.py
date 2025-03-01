@@ -23,10 +23,13 @@ from registration_app.exceptions import ForbiddenException
 router = APIRouter(prefix=settings.api.v1.role, tags=["Roles"])
 
 
-@router.get("/get_all_roles", response_model=list[RoleSchema])
+@router.get(
+    "/get_all_roles",
+    response_model=list[RoleSchema],
+    dependencies=[Depends(superuser_required)],
+)
 async def get_all_roles(
     session: AsyncSession = SessionDep,
-    _ = Depends(superuser_required),
 ):
     roles: list[RoleModel] = await RoleDAO.find_all(
         session,
@@ -39,12 +42,12 @@ async def get_all_roles(
     "/change_user_role",
     response_model=SuccessOperation,
     response_model_exclude_none=True,
+    dependencies=[Depends(superuser_required)],
 )
 async def change_user_role_by_username(
     username: str,
     role_name: PortalRole,
     session: AsyncSession = TransactionSessionDep,
-    _ = Depends(superuser_required),
 ):
     role_id = RoleCache.get_role_id(role_name)
 
